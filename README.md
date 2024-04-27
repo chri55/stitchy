@@ -11,6 +11,9 @@ My wife loves to crochet, and likes to challenge herself by making new rectangul
 - [x] `Print` or `Save` the generated image
 - [x] Make everything look pretty
 - [x] Click on a rendered grid square to cycle its color through palette options
+- [ ] Generate a written pattern per row
+  - [ ] Account for turns at the end of the row
+- [ ] Allow to rename each color palette color extracted
 
 ## License
 
