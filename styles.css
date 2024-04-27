@@ -17,8 +17,8 @@ p {
 }
 
 label {
-  display: block; 
-  margin-bottom: 20px; 
+  display: block;
+  margin-bottom: 20px;
 }
 
 label span {
@@ -146,4 +146,27 @@ input[type=file] {
   height: auto;
   display: inline-block;
   margin-left: 0;
+}
+
+#colorcontainer {
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+#colorpicker {
+  margin-left: auto;
+  margin-top: auto;
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+#pattern-generate {
+  text-transform: uppercase;
+  padding: 10px 60px;
+  color: white;
+  background: #444;
+  font-weight: normal;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
 }

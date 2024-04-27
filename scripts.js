@@ -1,6 +1,7 @@
 /* global FileReader, Image, Konva, ColorThief, nearestColor */
 var imageForm = document.getElementById('imageForm')
 var render = document.getElementById('render')
+var patternGenerator = document.getElementById('pattern-generate')
 var gridonholder = document.getElementById('gridonholder')
 var gridon = document.getElementById('gridon')
 var imageLoader = document.getElementById('imageLoader')
@@ -36,6 +37,7 @@ var renderedGrid // 2d array of grid colors
 var renderCanvas // rendered Canvas
 var renderCTX // rendered Canvas context
 var isGridEnabled = true // toggle grid on and off
+const colorNameMap = {} // map hex colors to a nickname
 
 form.addEventListener('submit', process)
 
@@ -46,6 +48,7 @@ function process (e) {
   bindImageUpload()
   bindTransform()
   bindRenderButton()
+  console.log({renderedGrid});
 }
 
 function calculateGrid () {
@@ -145,10 +148,16 @@ function bindImageUpload () {
         layer.add(pattern)
         pattern.moveToBottom()
         layer.batchDraw()
-        palette = colorThief.getPalette(img, colors)
-        rgbpalette = palette.map(x => rgbToHex(x[0], x[1], x[2]))
-        rgbpalette.push('#fff') // force add white for backgrounds
-        getColor = nearestColor.from(rgbpalette)
+        // palette = colorThief.getPalette(img, colors);
+        rgbpalette = [];
+        colorjs.prominent(img, { amount: colors, group: 40, sample: 10 }).then(colorPalette => {
+          console.log({colorPalette})
+          const palette = colorPalette.map(x => rgbToHex(x[0], x[1], x[2]));
+          rgbpalette = palette;
+          // rgbpalette = palette.map(x => rgbToHex(x[0], x[1], x[2]))
+          console.log({rgbpalette});
+          getColor = nearestColor.from(rgbpalette);
+        })
       }
       img.src = event.target.result
     }
@@ -174,6 +183,40 @@ function bindTransform () {
     })
     layer.add(tr)
     layer.draw()
+  })
+}
+
+function bindPatternButton () {
+  console.log({renderedGrid});
+  patternGenerator.innerHTML = 'Pattern';
+  patternGenerator.addEventListener('click', () => {
+    var text = '';
+    var currentColor = '';
+    var currentChain = 0;
+    console.log({inverted: invert2DArray(renderedGrid)});
+    invert2DArray(renderedGrid).forEach((row, rowIndex) => {
+      currentColor = '';
+      currentChain = 0;
+      if (rowIndex % 2 === 1) {
+        row = row.reverse();
+      }
+      console.log({row});
+      row.forEach((px, pxIdx) => {
+        const colorName = colorNameMap[px];
+        if (currentColor === colorName || !currentColor.length) {
+          currentChain ++;
+          currentColor = colorName;
+          if (pxIdx === row.length-1) text = `${text} (${currentChain} ${currentColor})`;
+        } else {
+          text = `${text} (${currentChain} ${currentColor})`;
+          currentColor = colorName;
+          currentChain = 1;
+        }
+
+      });
+      text = `${text}\n`
+    });
+    console.log({text});
   })
 }
 
@@ -254,13 +297,38 @@ function bindRenderButton () {
       link.addEventListener('click', function () {
         link.href = renderCanvas.toDataURL()
       }, false)
-      document.body.appendChild(link)
+      document.body.appendChild(link);
+      console.log({rgbpalette});
+      const colorPicker = document.getElementById('colorpicker');
+      rgbpalette.forEach(color => {
+        const textBox = document.createElement('span');
+
+        textBox.textContent = color;
+        textBox
+        textBox.style.backgroundColor = color;
+        textBox.style.color = invert(color, true);
+        const input = document.createElement('input');
+        input.value = color;
+        input.style.color = invert(color, true);
+        input.onkeyup = debounce((e) => (changeColorNameMap(color, e.target.value)), 300);
+        textBox.append(input);
+        textBox.id = `colorpicker-${color}`;
+        colorPicker.appendChild(textBox);
+        colorNameMap[color] = color;
+      })
+      bindPatternButton();
     }, 300)
   })
 }
 
+function changeColorNameMap (hexColor, name) {
+  colorNameMap[hexColor] = name;
+  console.log({colorNameMap})
+}
+
 function bindRenderCanvas () {
   renderCanvas.addEventListener('click', function (e) {
+    console.log({renderedGrid});
     var mouseX, mouseY
     if (e.offsetX) {
       mouseX = e.offsetX
@@ -347,4 +415,18 @@ function autoScale (imgEle) {
   var rH = gridMaxHeight / imgEle.height
   var scale = Math.min(rH < rW ? rH : rW, 1)
   return { x: scale, y: scale }
+}
+
+const debounce = (callback, wait) => {
+  let timeoutId = null;
+  return (...args) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(() => {
+      callback(...args);
+    }, wait);
+  };
+}
+
+const invert2DArray = (array) => {
+  return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
 }

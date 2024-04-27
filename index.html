@@ -9,6 +9,8 @@
     <link rel="shortcut icon" href="favicon.ico">
     <link href="styles.css" rel="stylesheet" type="text/css">
     <script defer type="text/javascript" src="konva.min.js"></script>
+    <script defer type="text/javascript" src="invert.min.js"></script>
+    <script src="https://unpkg.com/color.js@1.2.0/dist/color.js"></script>
     <script defer type="text/javascript" src="color-thief.umd.js"></script>
     <script defer type="text/javascript" src="nearestColor.js"></script>
     <script defer type="text/javascript" src="scripts.js"></script>
@@ -51,6 +53,10 @@
         <span>Grid on:</span>
         <input type="checkbox" name="gridon" id="gridon" checked>
       </label>
+    </div>
+    <div id="colorcontainer">
+      <div id="colorpicker"></div>
+      <div id="pattern-generate">Pattern</div>
     </div>
     <div id="logo"><a href="https://github.com/jamestomasino/stitchy"><img src="stitchy.svg" alt="Stitchy"></a></div>
   </body>
