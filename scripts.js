@@ -190,17 +190,21 @@ function bindPatternButton () {
   console.log({renderedGrid});
   patternGenerator.innerHTML = 'Pattern';
   patternGenerator.addEventListener('click', () => {
-    var text = '';
+    var text = 'Starting from Bottom Right, First Row RTL\n';
     var currentColor = '';
     var currentChain = 0;
     console.log({inverted: invert2DArray(renderedGrid)});
-    invert2DArray(renderedGrid).forEach((row, rowIndex) => {
+    // Reverse rows to start from bottom right
+    invert2DArray(renderedGrid).reverse().forEach((row, rowIndex) => {
       currentColor = '';
       currentChain = 0;
-      if (rowIndex % 2 === 1) {
+      let rightSide = false;
+      // Starting from bottom right, first crocheted row is RTL (right side)
+      if (rowIndex % 2 === 0) {
         row = row.reverse();
+        rightSide = true;
       }
-      console.log({row});
+      text = `${text}Row ${rowIndex+1}. (${rightSide ? 'RS' : 'WS'})`;
       row.forEach((px, pxIdx) => {
         const colorName = colorNameMap[px];
         if (currentColor === colorName || !currentColor.length) {
@@ -217,6 +221,7 @@ function bindPatternButton () {
       text = `${text}\n`
     });
     console.log({text});
+    download(`stitchy-pattern-${new Date().toISOString()}.txt`, text);
   })
 }
 
@@ -429,4 +434,19 @@ const debounce = (callback, wait) => {
 
 const invert2DArray = (array) => {
   return array[0].map((_, colIndex) => array.map(row => row[colIndex]));
+}
+
+function download(filename, text) {
+  var pom = document.createElement('a');
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  pom.setAttribute('download', filename);
+
+  if (document.createEvent) {
+      var event = document.createEvent('MouseEvents');
+      event.initEvent('click', true, true);
+      pom.dispatchEvent(event);
+  }
+  else {
+      pom.click();
+  }
 }
